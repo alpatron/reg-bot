@@ -95,7 +95,7 @@ class AdminCommands(commands.Cog):
                 await ctx.send('Please set the lookup limit first.')
                 return
             characterChannel = await self.configuration.getActiveCharacterChannel()
-            if lookupLimit == None:
+            if characterChannel == None:
                 await ctx.send('Please set the active-character channel first.')
                 return
             roleplayRoles = await self.configuration.getRoleplayRoles(ctx)
