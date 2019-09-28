@@ -11,7 +11,6 @@ class ConfigurationCommands(commands.Cog):
         self.bot = bot
         self.configuration = configuration
 
-    @commands.has_permissions(administrator=True)
     async def registerRoleplayCategoryChannel(self,ctx:commands.context.Context,category:discord.CategoryChannel):
         addedChannels = list()
         notAddedChannels = list()
@@ -38,7 +37,6 @@ class ConfigurationCommands(commands.Cog):
             message += channel.mention+'\n'
         await ctx.send(message)
 
-    @commands.has_permissions(administrator=True)
     async def unregisterRoleplayCategoryChannel(self,ctx:commands.context.Context,category:discord.CategoryChannel):
         removedChannels = list()
         notRemovedChannels = list()
@@ -65,7 +63,6 @@ class ConfigurationCommands(commands.Cog):
             message += channel.mention+'\n'
         await ctx.send(message)
 
-    @commands.has_permissions(administrator=True)
     async def registerRoleplayTextChannel(self,ctx:commands.context.Context,channel:discord.TextChannel):
         if await self.configuration.roleplayChannelExists(channel.id):
                 await ctx.send(f'This channel ({channel.mention}) is already registered in the roleplay list.')
@@ -73,7 +70,6 @@ class ConfigurationCommands(commands.Cog):
             await self.configuration.saveRoleplayChannel(channel.id)
             await ctx.send(f'The channel {channel.mention} has been registered as a roleplay channel.')
 
-    @commands.has_permissions(administrator=True)
     async def unregisterRoleplayTextChannel(self,ctx:commands.context.Context,channel:discord.TextChannel):
         if await self.configuration.roleplayChannelExists(channel.id):
             await self.configuration.removeRoleplayChannel(channel.id)
