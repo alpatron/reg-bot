@@ -18,18 +18,23 @@ Reg Bot is coded in Python using the [discord.py](https://github.com/Rapptz/disc
 
 I was too lazy to make a create a database-initialisation function or to create a database dump, so here's at least the schema of the database tables:
 
-#####configuaration
+##### configuaration
+
 | column name | column info |
 |-------|-----------------------|
 | id    |  integer(auto-increment;primary key) |
 | name  | character varying[64] |
 | value | character varying[64] |
-#####roleplay_channels
+
+##### roleplay_channels
+
 | column name | column info |
 |------------|-----------------------|
 | id    |  integer(auto-increment;primary key) |
 | channel_id | character varying[64] |
-#####roleplay_roles
+
+##### roleplay_roles
+
 | column name | column info |
 |------------|-----------------------|
 | id    |  integer(auto-increment;primary key) |
