@@ -1,6 +1,7 @@
 import asyncio
 import asyncpg
 import discord
+from helperFunction import getUserMessagesInChannel
 from typing import Union, List, Set
 from datetime import datetime, timedelta
 from discord.ext import commands
@@ -35,6 +36,14 @@ class RegBot(commands.Bot):
             await ctx.send(exception) #after commands.BadArgument exception becomes better, upgrade this to send nicer error messages
         else:
             await super().on_command_error(ctx,exception)
+
+    async def getCharacterSheet(self,user:Union[discord.Member,discord.User]) -> List[discord.Message]:
+        activeCharacterChannel = await self.get_cog('Configuration').getActiveCharacterChannel()
+        if activeCharacterChannel == None:
+            raise Exception('The active-character channel is not set.')
+        else:
+            return await getUserMessagesInChannel(activeCharacterChannel,user)
+        
 
     def run(self,token):
         super().run(token)

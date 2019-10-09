@@ -1,7 +1,7 @@
 import asyncio
 import asyncpg
 import discord
-from helperFunction import splitAndSend
+from helperFunction import splitAndSend, convertAttachementToFile, safeCopyMessagesToChannel, getUserMessagesInChannel
 from typing import Union, List, Set
 from datetime import datetime, timedelta
 from discord.ext import commands
@@ -16,48 +16,38 @@ class AdminCommands(commands.Cog):
     @commands.command(help='Archives the player\'s character.')
     @commands.has_permissions(administrator=True)
     async def archive(self,ctx:commands.context.Context,reason:str,*,player:Union[discord.Member,discord.User]):
-        playerCharacterSheet:List[discord.Message] = list()
-        activeCharacterChannel = await self.configuration.getActiveCharacterChannel()
-        characterArchiveChannel = await self.configuration.getCharacterArchiveChannel()
-        inactivePlayerRole = await self.configuration.getInactivePlayerRole(ctx)
+        with ctx.message.channel.typing():
+            PLAYER_CHARACTER_SHEET:List[discord.Message] = await self.bot.getCharacterSheet(player)
+            ACTIVE_CHARACTER_CHANNEL = await self.configuration.getActiveCharacterChannel()
+            CHARACTER_ARCHIVE_CHANNEL = await self.configuration.getCharacterArchiveChannel()
+            INACTIVE_PLAYER_ROLE = await self.configuration.getInactivePlayerRole(ctx)
 
-        if activeCharacterChannel == None:
-            await ctx.send('The active-character channel is not set. Character archival cannot be performed. Please, set the active-character channel.')
-            return
-        if characterArchiveChannel == None:
-            await ctx.send('The character-archive channel is not set. Character archival cannot be performed. Please, set the character-archive channel.')
-            return
+            if ACTIVE_CHARACTER_CHANNEL == None:
+                await ctx.send('The active-character channel is not set. Character archival cannot be performed. Please, set the active-character channel.')
+                return
+            if CHARACTER_ARCHIVE_CHANNEL == None:
+                await ctx.send('The character-archive channel is not set. Character archival cannot be performed. Please, set the character-archive channel.')
+                return
+            if INACTIVE_PLAYER_ROLE == None:
+                await ctx.send('The inactive-player role is not set. Character archival cannot ')
 
-        async for message in activeCharacterChannel.history(limit=None,oldest_first=True):
-            if message.author == player:
-                playerCharacterSheet.append(message)
-
-        if len(playerCharacterSheet) == 0:
-            await ctx.send(f'The user {player.display_name} does not havy any posts in {activeCharacterChannel.mention}.\n Performed no actions.')
-            return
-        else:
-            await characterArchiveChannel.send('-------------------------------------------')
-            await characterArchiveChannel.send(f'Owner: {player.mention}\nArchival reason: {reason}')
-            for message in playerCharacterSheet:
-                archiveMessage:str = message.content+'\n'
-                for attachment in message.attachments:
-                    archiveMessage += attachment.url
-                await splitAndSend(archiveMessage,characterArchiveChannel)
-            
-            if isinstance(player,discord.Member):
-                playerRoles = player.roles
-                for roleplayRole in await self.configuration.getRoleplayRoles(ctx):
-                    try:
-                        playerRoles.remove(roleplayRole)
-                    except:
-                        pass
+            if len(PLAYER_CHARACTER_SHEET) == 0:
+                await ctx.send(f'The user {player.display_name} does not havy any posts in {ACTIVE_CHARACTER_CHANNEL.mention}.\n Performed no actions.')
+                return
+            else:
+                await CHARACTER_ARCHIVE_CHANNEL.send('-------------------------------------------')
+                await CHARACTER_ARCHIVE_CHANNEL.send(f'Owner: {player.mention}\nArchival reason: {reason}')
                 
-                if not inactivePlayerRole in playerRoles:
-                    playerRoles.append(inactivePlayerRole)
+                await safeCopyMessagesToChannel(PLAYER_CHARACTER_SHEET,CHARACTER_ARCHIVE_CHANNEL)
 
-                await player.edit(roles=playerRoles,reason='Performing automatic character archival.')
+                if isinstance(player,discord.Member):
+                    playerRoles = set(player.roles)
+                    playerRoles.difference_update(await self.configuration.getRoleplayRoles(ctx))
+                    playerRoles.add(INACTIVE_PLAYER_ROLE)
 
-            await ctx.send(f'Archived {player.display_name}\'s character from {activeCharacterChannel.mention} and updated the player\'s roles if they are on the server.\nCheck {characterArchiveChannel.mention} if archival was successful.\nIf it was, remove the original posts in {activeCharacterChannel.mention}.')
+                    await player.edit(roles=list(playerRoles),reason='Performing automatic character archival.')
+
+                await ctx.send(f'Archived {player.display_name}\'s character from {ACTIVE_CHARACTER_CHANNEL.mention} and updated the player\'s roles if they are on the server.\nCheck {CHARACTER_ARCHIVE_CHANNEL.mention} if archival was successful.\nIf it was, remove the original posts in {ACTIVE_CHARACTER_CHANNEL.mention}.\nBe also sure to check {CHARACTER_ARCHIVE_CHANNEL.mention} if any attachments were not able to be archived.')
 
     @commands.command(help='Displays an activty report of players: For players who are still on the server, the function shows how long it has been since their last activity and whether that is enough to be deemed inactive by the threshold. It also shows members who left but still have a character sheet in the active-characters channel. A player is defined as someone who has any of the set roleplay roles.')
     async def activityReport(self,ctx:commands.context.Context):

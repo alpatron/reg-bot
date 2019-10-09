@@ -16,7 +16,7 @@ Reg Bot is coded in Python using the [discord.py](https://github.com/Rapptz/disc
 
 ## Database
 
-I was too lazy to make a create a database-initialisation function or to create a database dump, so here's at least the schema of the database tables:
+I was too lazy to a create a database-initialisation function or to create a database dump, so here's at least the schema of the database tables:
 
 ##### configuaration
 

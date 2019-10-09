@@ -5,6 +5,8 @@ from typing import Union, List, Set
 from discord.ext import commands
 from main import RegBot
 
+#This class is used to interact with the bot's settings stored in its database. Getting, setting, and unsetting values.
+#This class DOES NOT contain the COMMANDS USED BY THE USERS; for that, see configurationCommands.py
 class Configuration(commands.Cog):
     def __init__(self,bot:RegBot):
         self.bot = bot
