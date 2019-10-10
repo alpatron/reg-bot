@@ -27,7 +27,7 @@ async def splitAndSend(message:str,channel:discord.channel.TextChannel):
             goodMessages.append(message)
 
     MAXIMUM_LENGHT = 2000
-    if len(message) < MAXIMUM_LENGHT:
+    if len(message) <= MAXIMUM_LENGHT:
         await channel.send(message)
     else:
         goodMessages : List[str] = list()
