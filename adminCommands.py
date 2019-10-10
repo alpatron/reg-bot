@@ -1,5 +1,4 @@
 import asyncio
-import asyncpg
 import discord
 from helperFunction import splitAndSend, convertAttachementToFile, safeCopyMessagesToChannel, getUserMessagesInChannel
 from typing import Union, List, Set

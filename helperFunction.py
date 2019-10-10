@@ -1,21 +1,51 @@
 import discord
 import io
-from typing import Union, List, Set
+import textwrap
+import re
+from typing import Union, List, Set, Callable
 
 async def splitAndSend(message:str,channel:discord.channel.TextChannel):
-    if len(message) < 2000:
+    async def genericSplit(text:str,threshold:int, splitFunction:Callable[[str],List[str]]) -> List[str]:
+        initialSegments = splitFunction(text)
+        finalSegments = list()
+        currentlyAssembledFinalSegment = ''
+        for segment in initialSegments:
+            if len(segment) > threshold:
+                if currentlyAssembledFinalSegment != '':
+                    finalSegments.append(currentlyAssembledFinalSegment)
+                finalSegments.append(segment)
+                currentlyAssembledFinalSegment = ''
+            elif len(currentlyAssembledFinalSegment+segment) > threshold:
+                finalSegments.append(currentlyAssembledFinalSegment)
+                currentlyAssembledFinalSegment = segment
+            else:
+                currentlyAssembledFinalSegment += segment
+        finalSegments.append(currentlyAssembledFinalSegment)
+        return finalSegments
+    def safeGoodMessageAppend(message:str):
+        if message.strip() != '':
+            goodMessages.append(message)
+
+    MAXIMUM_LENGHT = 2000
+    if len(message) < MAXIMUM_LENGHT:
         await channel.send(message)
     else:
-        lines = message.splitlines(True)
-        messages = list()
-        currentMessage = ''
-        for line in lines:
-            if len(currentMessage+line) > 2000:
-                messages.append(currentMessage)
-                currentMessage = ''
+        goodMessages : List[str] = list()
+        
+        lineSplitMesseges = await genericSplit(message,MAXIMUM_LENGHT,lambda x: x.splitlines(True))
+        for lineSplitMessage in lineSplitMesseges:
+            if len(lineSplitMessage) <= MAXIMUM_LENGHT:
+                safeGoodMessageAppend(lineSplitMessage)
             else:
-                currentMessage += line
-        for goodMessage in messages:
+                sentenceSplitMesseges = await genericSplit(lineSplitMessage,MAXIMUM_LENGHT,lambda x: re.split(r'((?<=[.?!])\s)', x))
+                for senteceSplitMessage in  sentenceSplitMesseges:
+                    if len(senteceSplitMessage) <= MAXIMUM_LENGHT:
+                        safeGoodMessageAppend(senteceSplitMessage)
+                    else:
+                        for characterSplitMessage in textwrap.wrap(senteceSplitMessage,width=MAXIMUM_LENGHT,expand_tabs=False,replace_whitespace=False,drop_whitespace=False):
+                            safeGoodMessageAppend(characterSplitMessage)
+        
+        for goodMessage in goodMessages:
             await channel.send(goodMessage)
 
 async def convertAttachementToFile(attachment:discord.Attachment) -> discord.File:

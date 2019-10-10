@@ -1,6 +1,7 @@
 import asyncio
 import asyncpg
 import discord
+import aiohttp
 from helperFunction import getUserMessagesInChannel
 from typing import Union, List, Set
 from datetime import datetime, timedelta
@@ -20,8 +21,9 @@ class RegBot(commands.Bot):
         self.add_cog(configurationCommands.ConfigurationCommands(self,self.get_cog('Configuration')))
         import adminCommands
         self.add_cog(adminCommands.AdminCommands(self,self.get_cog('Configuration')))
-        self.add_command(_bodge)
-        self.add_command(say)
+        import commandsCommands
+        self.add_cog(commandsCommands.CommandsCommands(self))
+        self.http_session = aiohttp.ClientSession()
     
     async def on_command_error(self,ctx,exception):
         #Wait, can I not make the message part of the exception class or something? It'd perhaps be worth to look into.
@@ -47,22 +49,3 @@ class RegBot(commands.Bot):
 
     def run(self,token):
         super().run(token)
-
-#Bodge because I want to have "say it" as one command with a space in the name, but Discord.py doesn't support this.
-@commands.command(name='say it',brief='Sigh. Makes me say it.')
-async def _bodge(ctx):
-    pass
-
-@commands.group(hidden=True)
-async def say(ctx):
-    pass
-
-@say.command(rest_is_raw=True,help='Please don\'t use this command.',hidden=True,ignore_extra=False)
-async def it(ctx):
-    async with ctx.message.channel.typing():
-        await asyncio.sleep(1)
-        await ctx.send('*sigh* If you insist...')
-        await asyncio.sleep(1)
-    async with ctx.message.channel.typing():
-        await asyncio.sleep(3)
-        await ctx.send('Irredeemable!')
