@@ -9,13 +9,13 @@ class CommandsCommands(commands.Cog, name='commands'):
     def __init__(self,bot:RegBot):
         self.bot = bot
     
-    @commands.command(help='Loads a Pastebin paste and splits it into Discord messages (so that you don\'t have to split it yourself)!')
+    @commands.command(help='Loads a Pastebin paste and splits it into Discord messages (so that you don\'t have to split it yourself)! User mentions (including \'everyone\' and \'here\' are stripped.)')
     async def pastebinSplit(self,ctx:commands.Context,pastebinID:str):
         async with ctx.message.channel.typing():
             URL = 'https://pastebin.com/raw/'
             async with self.bot.http_session.get(URL+pastebinID) as response:
                 if response.status == 200:
-                    await splitAndSend(await response.text(),ctx.channel)
+                    await splitAndSend(await response.text(),ctx.channel,removeMentions=True)
                 else:
                     await ctx.send('There was a problem with getting the paste.')
 

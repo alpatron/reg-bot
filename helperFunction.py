@@ -4,7 +4,7 @@ import textwrap
 import re
 from typing import Union, List, Set, Callable
 
-async def splitAndSend(message:str,channel:discord.channel.TextChannel):
+async def splitAndSend(message:str,channel:discord.channel.TextChannel,removeMentions=False):
     async def genericSplit(text:str,threshold:int, splitFunction:Callable[[str],List[str]]) -> List[str]:
         initialSegments = splitFunction(text)
         finalSegments = list()
@@ -27,6 +27,10 @@ async def splitAndSend(message:str,channel:discord.channel.TextChannel):
             goodMessages.append(message)
 
     MAXIMUM_LENGHT = 2000
+    
+    if removeMentions:
+        message = discord.utils.escape_mentions(message)
+
     if len(message) <= MAXIMUM_LENGHT:
         await channel.send(message)
     else:
@@ -53,26 +57,26 @@ async def convertAttachementToFile(attachment:discord.Attachment) -> discord.Fil
     proccessedAttachmentData = io.BytesIO(attachmentData)
     return discord.File(proccessedAttachmentData,filename=attachment.filename,spoiler=attachment.is_spoiler())
 
-async def safeCopyMessagesToChannel(messages:List[discord.Message],channel:discord.TextChannel):
+async def safeCopyMessagesToChannel(messages:List[discord.Message],channel:discord.TextChannel,removeMentions=False):
     attachmentsWhichAreTooBig:List[discord.File] = list()
     MAXIMUM_ATTACHMENT_SIZE : int = channel.guild.filesize_limit
 
     for message in messages:
-        files : List[discord.Attachment] = list()
+        goodFiles : List[discord.Attachment] = list()
         attachment:discord.Attachment
         for attachment in message.attachments:
             if attachment.size > MAXIMUM_ATTACHMENT_SIZE:
                 attachmentsWhichAreTooBig.append(attachment)
             else:
-                files.append(await convertAttachementToFile(attachment))
-        if message.content != '' or len(files) > 0:
-            await channel.send(message.content,files=files)
+                goodFiles.append(await convertAttachementToFile(attachment))
+        if message.content != '' or len(goodFiles) > 0:
+            await channel.send(message.content,files=goodFiles)
     
     if len(attachmentsWhichAreTooBig) > 0:
         message = 'Some attachments were too large to send; please save them somewhere, lest they be lost when the links expire:\n'
         for attachment in attachmentsWhichAreTooBig:
             message += attachment.proxy_url+'\n'
-        await splitAndSend(message,channel)
+        await splitAndSend(message,channel,removeMentions)
 
 async def getUserMessagesInChannel(channel:discord.TextChannel,user:Union[discord.Member,discord.User]) -> List[discord.Message]:
     messages = list()

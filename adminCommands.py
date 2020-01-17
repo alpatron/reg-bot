@@ -12,7 +12,7 @@ class AdminCommands(commands.Cog):
         self.bot = bot
         self.configuration = configuration
 
-    @commands.command(help='Archives the player\'s character.')
+    @commands.command(help='Archives the player\'s character. Note: All user mentions are stripped from the archived character sheet.')
     @commands.has_permissions(administrator=True)
     async def archive(self,ctx:commands.context.Context,reason:str,*,player:Union[discord.Member,discord.User]):
         with ctx.message.channel.typing():
@@ -37,7 +37,7 @@ class AdminCommands(commands.Cog):
                 await CHARACTER_ARCHIVE_CHANNEL.send('-------------------------------------------')
                 await CHARACTER_ARCHIVE_CHANNEL.send(f'Owner: {player.mention}\nArchival reason: {reason}')
                 
-                await safeCopyMessagesToChannel(PLAYER_CHARACTER_SHEET,CHARACTER_ARCHIVE_CHANNEL)
+                await safeCopyMessagesToChannel(PLAYER_CHARACTER_SHEET,CHARACTER_ARCHIVE_CHANNEL,removeMentions=True)
 
                 if isinstance(player,discord.Member):
                     playerRoles = set(player.roles)
