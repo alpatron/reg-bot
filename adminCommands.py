@@ -20,6 +20,7 @@ class AdminCommands(commands.Cog):
             ACTIVE_CHARACTER_CHANNEL = await self.configuration.getActiveCharacterChannel()
             CHARACTER_ARCHIVE_CHANNEL = await self.configuration.getCharacterArchiveChannel()
             INACTIVE_PLAYER_ROLE = await self.configuration.getInactivePlayerRole(ctx)
+            ROLEPLAY_ROLES = await self.configuration.getRoleplayRoles(ctx)
 
             if ACTIVE_CHARACTER_CHANNEL == None:
                 await ctx.send('The active-character channel is not set. Character archival cannot be performed. Please, set the active-character channel.')
@@ -28,7 +29,8 @@ class AdminCommands(commands.Cog):
                 await ctx.send('The character-archive channel is not set. Character archival cannot be performed. Please, set the character-archive channel.')
                 return
             if INACTIVE_PLAYER_ROLE == None:
-                await ctx.send('The inactive-player role is not set. Character archival cannot ')
+                await ctx.send('The inactive-player role is not set. Character archival cannot be performed. PLease, set the inactive-character role.')
+                return
 
             if len(PLAYER_CHARACTER_SHEET) == 0:
                 await ctx.send(f'The user {player.display_name} does not havy any posts in {ACTIVE_CHARACTER_CHANNEL.mention}.\n Performed no actions.')
@@ -41,12 +43,12 @@ class AdminCommands(commands.Cog):
 
                 if isinstance(player,discord.Member):
                     playerRoles = set(player.roles)
-                    playerRoles.difference_update(await self.configuration.getRoleplayRoles(ctx))
-                    playerRoles.add(INACTIVE_PLAYER_ROLE)
+                    if not playerRoles.isdisjoint(ROLEPLAY_ROLES): #Only modify the user's roles if they already have one or more roleplay roles, as to not add the inactive-player role to players who've never had an approved sheet.
+                        playerRoles.difference_update(ROLEPLAY_ROLES)
+                        playerRoles.add(INACTIVE_PLAYER_ROLE)
+                        await player.edit(roles=list(playerRoles),reason='Performing automatic character archival.')
 
-                    await player.edit(roles=list(playerRoles),reason='Performing automatic character archival.')
-
-                await ctx.send(f'Archived {player.display_name}\'s character from {ACTIVE_CHARACTER_CHANNEL.mention} and updated the player\'s roles if they are on the server.\nCheck {CHARACTER_ARCHIVE_CHANNEL.mention} if archival was successful.\nIf it was, remove the original posts in {ACTIVE_CHARACTER_CHANNEL.mention}.\nBe also sure to check {CHARACTER_ARCHIVE_CHANNEL.mention} if any attachments were not able to be archived.')
+                await ctx.send(f'Archived {player.display_name}\'s character from {ACTIVE_CHARACTER_CHANNEL.mention} and updated the player\'s roles if they are on the server and need be.\nCheck {CHARACTER_ARCHIVE_CHANNEL.mention} if archival was successful.\nIf it was, remove the original posts in {ACTIVE_CHARACTER_CHANNEL.mention}.\nBe also sure to check {CHARACTER_ARCHIVE_CHANNEL.mention} if any attachments were not able to be archived.')
 
     @commands.command(help='Displays an activty report of players: For players who are still on the server, the function shows how long it has been since their last activity and whether that is enough to be deemed inactive by the threshold. It also shows members who left but still have a character sheet in the active-characters channel. A player is defined as someone who has any of the set roleplay roles.')
     async def activityReport(self,ctx:commands.context.Context):
