@@ -1,6 +1,6 @@
 import asyncio
 import discord
-from helperFunction import splitAndSend, convertAttachementToFile, safeCopyMessagesToChannel, getUserMessagesInChannel
+from helperFunction import splitAndSend, convertAttachementToFile, safeCopyMessagesToChannel
 from typing import Union, List, Set
 from datetime import datetime, timedelta
 from discord.ext import commands
@@ -12,9 +12,25 @@ class AdminCommands(commands.Cog):
         self.bot = bot
         self.configuration = configuration
 
-    @commands.command(help='Archives the player\'s character. Note: All user mentions are stripped from the archived character sheet.')
+    #To workaround the problem that discord.py's User converter does not convert
+    #users who no longer are on the server, there is this converter which just calls
+    #fetch_user if the argument is a number. This should be better implemented, but
+    #it works for now, and I've found this fix, so I just want to be done with it.
+    class ClientIdConverter(commands.Converter):
+        async def convert(self,ctx:commands.Context,argument) -> Union[discord.User,None]:
+            try:
+                iD = int(argument)
+            except:
+                raise commands.BadArgument('Not a number')
+            user = await ctx.bot.fetch_user(iD)
+            if user is not None:
+                return user
+            else:
+                raise commands.BadArgument('Couldn\'t resolve ID')
+
+    @commands.command(help='Archives the player\'s character. Note: All user mentions are stripped from the archived character sheet. If the user has left the server, you most probably need to use the command with the user\'s ID.')
     @commands.has_permissions(administrator=True)
-    async def archive(self,ctx:commands.context.Context,reason:str,*,player:Union[discord.Member,discord.User]):
+    async def archive(self,ctx:commands.context.Context,reason:str,*,player:Union[discord.Member,discord.User,ClientIdConverter]):
         with ctx.message.channel.typing():
             PLAYER_CHARACTER_SHEET:List[discord.Message] = await self.bot.getCharacterSheet(player)
             ACTIVE_CHARACTER_CHANNEL = await self.configuration.getActiveCharacterChannel()
@@ -58,8 +74,9 @@ class AdminCommands(commands.Cog):
                 if len(set(member.roles).intersection(roleplayRoles)) != 0:
                     activePlayers.add(member)
             return activePlayers
-        async def getDeadAccounts() -> Set[discord.User]:
+        async def getDeadPlayerAccounts() -> Set[discord.User]:
             deadAccounts = set()
+            message : discord.Message
             async for message in characterChannel.history(limit=None):
                 if isinstance(message.author,discord.User): #message.author returns discord.member if submitter is on server, discord.user otherwise
                     deadAccounts.add(message.author)
@@ -98,7 +115,7 @@ class AdminCommands(commands.Cog):
                 await ctx.send('The number of set roleplay channels is zero; please, set some roleplay channels first.')
                 return
             playersWithApprovedCharacter = await getPlayersWithApprovedCharacter()
-            deadPlayers = await getDeadAccounts()
+            deadPlayers = await getDeadPlayerAccounts()
             playerActivities = await getLastActivity()
             
             message = f'Activity report ({now.isoformat()})\n\n'
