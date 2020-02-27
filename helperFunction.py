@@ -4,7 +4,7 @@ import textwrap
 import re
 from typing import Union, List, Set, Callable
 
-async def splitAndSend(message:str,channel:discord.channel.TextChannel,removeMentions=False):
+async def splitAndSend(message:str,channel:discord.channel.TextChannel,removeMentions=False,sendAsEmbed=False):
     async def genericSplit(text:str,threshold:int, splitFunction:Callable[[str],List[str]]) -> List[str]:
         initialSegments = splitFunction(text)
         finalSegments = list()
@@ -50,7 +50,10 @@ async def splitAndSend(message:str,channel:discord.channel.TextChannel,removeMen
                             safeGoodMessageAppend(characterSplitMessage)
         
         for goodMessage in goodMessages:
-            await channel.send(goodMessage)
+            if sendAsEmbed:
+                await channel.send(embed=discord.Embed(description=goodMessage))
+            else:
+                await channel.send(goodMessage)
 
 async def convertAttachementToFile(attachment:discord.Attachment) -> discord.File:
     attachmentData = await attachment.read()

@@ -106,7 +106,7 @@ class AdminCommands(commands.Cog):
                 player : discord.Member
                 lastMessage: discord.Message
                 for player, lastMessage in sorted(inactivePlayers.items(),key=lambda x: x[1]):
-                        message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} <{lastMessage.jump_url}>)\n'
+                        message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
             else:
                 message += 'No inactive players.\n'
             
@@ -116,7 +116,7 @@ class AdminCommands(commands.Cog):
                 player : discord.Member
                 lastMessage: discord.Message
                 for player, lastMessage in sorted(activePlayers.items(),key=lambda x:x[1].created_at):
-                    message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} <{lastMessage.jump_url}>)\n'
+                    message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
             else:
                 message += '*sob* Irredeemable! There are no active players. Is the server dead? Hello, anyone?'
-            await splitAndSend(message,ctx.channel)
+            await splitAndSend(message,ctx.channel,sendAsEmbed=True)
