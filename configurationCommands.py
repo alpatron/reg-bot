@@ -129,7 +129,7 @@ class ConfigurationCommands(commands.Cog):
 
     @commands.command(help='Displays a list of roleplay roles. (Used in to determine who is a roleplayer and which roles to remove while archiving.)')
     async def listRoleplayRoles(self,ctx:commands.context.Context):
-        roleplayRoles = await self.configuration.getRoleplayRoles(ctx)
+        roleplayRoles = await self.configuration.getRoleplayRoles(ctx.guild)
         output = 'Roleplay roles are:\n'
         if len(roleplayRoles) != 0:
             for role in roleplayRoles:

@@ -74,11 +74,11 @@ class Configuration(commands.Cog):
         else:
             return ctx.guild.get_role(int(role['value'])) #No need for await here for some reason.
 
-    async def getRoleplayRoles(self,ctx:commands.context.Context) -> Set[discord.Role]:
+    async def getRoleplayRoles(self,guild:discord.Guild) -> Set[discord.Role]:
         roleplayRoles = set()
         roleplayRoleIDs = await self.bot.db.fetch(f'SELECT * FROM {self.ROLEPLAY_ROLES_TABLE}')
         for roleID in roleplayRoleIDs:
-            roleplayRoles.add(ctx.guild.get_role(int(roleID['role_id'])))
+            roleplayRoles.add(guild.get_role(int(roleID['role_id'])))
         return roleplayRoles
 
     async def getInactivityThreshold(self) -> Union[int, None]:

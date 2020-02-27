@@ -3,7 +3,7 @@ import asyncpg
 import discord
 import aiohttp
 from helperFunction import getUserMessagesInChannel
-from typing import Union, List, Set
+from typing import Union, List, Set, Dict
 from datetime import datetime, timedelta
 from discord.ext import commands
 
@@ -45,7 +45,35 @@ class RegBot(commands.Bot):
             raise Exception('The active-character channel is not set.')
         else:
             return await getUserMessagesInChannel(activeCharacterChannel,user)
-        
+
+    async def getLastActivity(self,now:datetime) -> Dict[discord.User,discord.Message]:
+        playerActivities = dict()
+        lookupBegin = now - timedelta(days=await self.get_cog('Configuration').getActivityReportLookupLimit())
+        for channel in await self.get_cog('Configuration').getRoleplayChannels():
+            async for message in channel.history(limit=None,after=lookupBegin):
+                if message.author in playerActivities:
+                    if message.created_at > playerActivities[message.author].created_at:
+                        playerActivities[message.author] = message
+                else:
+                    playerActivities[message.author] = message
+        return playerActivities    
+
+    async def getDeadPlayerAccounts(self) -> Set[discord.User]:
+        ACTIVE_CHARACTER_CHANNEL = await self.get_cog('Configuration').getActiveCharacterChannel()
+        deadAccounts = set()
+        message : discord.Message
+        async for message in ACTIVE_CHARACTER_CHANNEL.history(limit=None):
+            if isinstance(message.author,discord.User): #message.author returns discord.member if submitter is on server; discord.user otherwise
+                deadAccounts.add(message.author)
+        return deadAccounts
+
+    async def getPlayersWithApprovedCharacter(self, guild:discord.Guild) -> Set[discord.Member]:
+        ROLEPLAY_ROLES : Set[discord.Role] = await self.get_cog('Configuration').getRoleplayRoles(guild)
+        activePlayers = set()
+        for member in guild.members:
+            if len(set(member.roles).intersection(ROLEPLAY_ROLES)) != 0:
+                activePlayers.add(member)
+        return activePlayers
 
     def run(self,token):
         super().run(token)
