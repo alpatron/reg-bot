@@ -21,8 +21,8 @@ class RegBot(commands.Bot):
         self.add_cog(configurationCommands.ConfigurationCommands(self,self.get_cog('Configuration')))
         import adminCommands
         self.add_cog(adminCommands.AdminCommands(self,self.get_cog('Configuration')))
-        import commandsCommands
-        self.add_cog(commandsCommands.CommandsCommands(self,self.get_cog('Configuration')))
+        import userCommands
+        self.add_cog(userCommands.UserCommands(self,self.get_cog('Configuration')))
         self.http_session = aiohttp.ClientSession()
     
     async def on_command_error(self,ctx,exception):

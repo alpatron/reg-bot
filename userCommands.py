@@ -7,7 +7,7 @@ from configuration import Configuration
 from datetime import datetime, timedelta
 
 #This class is used to hold commands of no special significance, those which may be used by any user.
-class CommandsCommands(commands.Cog, name='commands'):
+class UserCommands(commands.Cog, name='UserCommands'):
     def __init__(self,bot:RegBot,configuration:Configuration):
         self.bot = bot
         self.configuration = configuration
