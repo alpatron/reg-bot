@@ -22,7 +22,7 @@ class RegBot(commands.Bot):
         import adminCommands
         self.add_cog(adminCommands.AdminCommands(self,self.get_cog('Configuration')))
         import commandsCommands
-        self.add_cog(commandsCommands.CommandsCommands(self))
+        self.add_cog(commandsCommands.CommandsCommands(self,self.get_cog('Configuration')))
         self.http_session = aiohttp.ClientSession()
     
     async def on_command_error(self,ctx,exception):
