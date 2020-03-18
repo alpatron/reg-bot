@@ -51,7 +51,7 @@ class UserCommands(commands.Cog, name='UserCommands'):
                         message += f'{player.display_name} (last activity: more than {LOOKUP_LIMIT} days ago)\n'
                 player : discord.Member
                 lastMessage: discord.Message
-                for player, lastMessage in sorted(inactivePlayers.items(),key=lambda x: x[1]):
+                for player, lastMessage in sorted(inactivePlayers.items(),key=lambda x: x[1].created_at):
                         message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
             else:
                 message += 'No inactive players.\n'
