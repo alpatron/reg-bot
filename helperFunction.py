@@ -81,6 +81,7 @@ async def safeCopyMessagesToChannel(messages:List[discord.Message],channel:disco
             message += attachment.proxy_url+'\n'
         await splitAndSend(message,channel,removeMentions)
 
+#Returns all of a user's messages in a given channel (sorted from oldest to newest [using 'created_at', like you would do if you scrolled through a channel]).
 async def getUserMessagesInChannel(channel:discord.TextChannel,user:Union[discord.Member,discord.User]) -> List[discord.Message]:
     messages = list()
     async for message in channel.history(limit=None,oldest_first=True):

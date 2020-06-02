@@ -70,10 +70,19 @@ class RegBot(commands.Bot):
         accounts : Set[Union[discord.Member,discord.User]] = await self.getPlayersInCharacterSheetChannel()
         return set(filter(lambda account:isinstance(account,discord.User),accounts))
 
-    async def getPlayersWithUnapprovedCharacter(self) -> Set[discord.Member]:
-        accountsInSheetChannel = self.getPlayersInCharacterSheetChannel()
-        return accountsInSheetChannel.difference(await self.getPlayersWithApprovedCharacter())
+    #Returns a dictionary of players who are waiting for sheet approval as the keys, and their sheets as dictionary values
+    async def getPlayersWaitingForApproval(self, guild: discord.Guild) -> Dict[discord.Member,List[discord.Message]]:
+        ROLEPLAY_ROLES : Set[discord.Role] = await self.get_cog('Configuration').getRoleplayRoles(guild)
+        accountsInSheetChannel = await self.getPlayersInCharacterSheetChannel()
+        #Someone who's waiting for approval is an instance of 'discord.member', i.e. they are ON the server and have not left, and they have no roleplay roles (yet).
+        playersWaitingForApproval = filter(lambda account: isinstance(account,discord.Member) and len(set(account.roles).intersection(ROLEPLAY_ROLES)) == 0,accountsInSheetChannel)
+        finalDictionary = dict()
+        for player in playersWaitingForApproval:
+            finalDictionary[player] = await self.getCharacterSheet(player)
+        return finalDictionary
 
+    #Returns all players who have an approved character, determing if so by whether they have roles.
+    #This means that people with player roles and no sheet ARE categorised as people with an approved characater.
     async def getPlayersWithApprovedCharacter(self, guild:discord.Guild) -> Set[discord.Member]:
         ROLEPLAY_ROLES : Set[discord.Role] = await self.get_cog('Configuration').getRoleplayRoles(guild)
         return set(filter(lambda member: len(set(member.roles).intersection(ROLEPLAY_ROLES)) != 0,guild.members))

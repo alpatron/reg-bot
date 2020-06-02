@@ -31,9 +31,10 @@ class UserCommands(commands.Cog, name='UserCommands'):
             PLAYERS_WITH_APPROVED_CHARACTER = await self.bot.getPlayersWithApprovedCharacter(ctx.guild)
             DEAD_PLAYERS = await self.bot.getDeadPlayerAccounts()
             PLAYER_ACTIVITIES = await self.bot.getLastActivity(NOW)
-            
+            UNAPPROVED_PLAYERS = await self.bot.getPlayersWaitingForApproval(ctx.guild)
+
             message = f'Activity report ({NOW.isoformat()})\n\n'
-            
+
             message += f'Players who left the server, but still have some posts in {CHARACTER_CHANNEL.mention}:\n'
             if len(DEAD_PLAYERS) != 0:
                 for deadPlayer in DEAD_PLAYERS:
@@ -41,6 +42,18 @@ class UserCommands(commands.Cog, name='UserCommands'):
             else:
                 message += 'There are none.\n'
             
+            message += f'\nPlayers with unapproved sheets (edit times don\'t reflect Google Docs edits and similar):\n'
+            if len(UNAPPROVED_PLAYERS) != 0:
+                def unapprovedPlayersSort(x):
+                    lastMessage = max(x[1],key=lambda message:message.edited_at if message.edited_at is not None else message.created_at)
+                    return lastMessage.edited_at if lastMessage.edited_at is not None else lastMessage.created_at
+                sortedUnapprovedPlayers = sorted(UNAPPROVED_PLAYERS.items(),key=unapprovedPlayersSort)
+                for player, sheet in sortedUnapprovedPlayers:
+                    lastMessage = max(sheet,key=lambda message:message.edited_at if message.edited_at is not None else message.created_at)
+                    message += f'{player.display_name} (last edited: {(NOW - (lastMessage.edited_at if lastMessage.edited_at is not None else lastMessage.created_at)).days} days ago) [jump]({lastMessage.jump_url})\n'
+            else:
+                message += 'There are none.\n'
+
             message += '\nInactive players:\n'
             #lastMessage[1] is the player's last roleplay message
             #lastMessage[0] is the dict key, i.e. the player object
