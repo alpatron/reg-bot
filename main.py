@@ -3,7 +3,7 @@ import asyncpg
 import discord
 import aiohttp
 from helperFunction import getUserMessagesInChannel
-from typing import Union, List, Set, Dict
+from typing import Union, List, Set, Dict, Union
 from datetime import datetime, timedelta
 from discord.ext import commands
 
@@ -58,22 +58,25 @@ class RegBot(commands.Bot):
                     playerActivities[message.author] = message
         return playerActivities    
 
-    async def getDeadPlayerAccounts(self) -> Set[discord.User]:
+    async def getPlayersInCharacterSheetChannel(self) -> Set[Union[discord.Member,discord.User]]:
         ACTIVE_CHARACTER_CHANNEL = await self.get_cog('Configuration').getActiveCharacterChannel()
-        deadAccounts = set()
+        accounts = set()
         message : discord.Message
         async for message in ACTIVE_CHARACTER_CHANNEL.history(limit=None):
-            if isinstance(message.author,discord.User): #message.author returns discord.member if submitter is on server; discord.user otherwise
-                deadAccounts.add(message.author)
-        return deadAccounts
+            accounts.add(message.author)
+        return accounts
+
+    async def getDeadPlayerAccounts(self) -> Set[discord.User]:
+        accounts : Set[Union[discord.Member,discord.User]] = await self.getPlayersInCharacterSheetChannel()
+        return set(filter(lambda account:isinstance(account,discord.User),accounts))
+
+    async def getPlayersWithUnapprovedCharacter(self) -> Set[discord.Member]:
+        accountsInSheetChannel = self.getPlayersInCharacterSheetChannel()
+        return accountsInSheetChannel.difference(await self.getPlayersWithApprovedCharacter())
 
     async def getPlayersWithApprovedCharacter(self, guild:discord.Guild) -> Set[discord.Member]:
         ROLEPLAY_ROLES : Set[discord.Role] = await self.get_cog('Configuration').getRoleplayRoles(guild)
-        activePlayers = set()
-        for member in guild.members:
-            if len(set(member.roles).intersection(ROLEPLAY_ROLES)) != 0:
-                activePlayers.add(member)
-        return activePlayers
+        return set(filter(lambda member: len(set(member.roles).intersection(ROLEPLAY_ROLES)) != 0,guild.members))
 
     def run(self,token):
         super().run(token)
