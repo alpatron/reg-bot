@@ -34,11 +34,10 @@ class UserCommands(commands.Cog, name='UserCommands'):
             UNAPPROVED_PLAYERS = await self.bot.getPlayersWaitingForApproval(ctx.guild)
 
             message = f'Activity report ({NOW.isoformat()})\n\n'
-
             message += f'Players who left the server, but still have some posts in {CHARACTER_CHANNEL.mention}:\n'
             if len(DEAD_PLAYERS) != 0:
                 for deadPlayer in DEAD_PLAYERS:
-                    message += f'{deadPlayer.display_name}\n'
+                    message += f'{discord.utils.escape_markdown(deadPlayer.display_name)}\n'
             else:
                 message += 'There are none.\n'
             
@@ -50,7 +49,7 @@ class UserCommands(commands.Cog, name='UserCommands'):
                 sortedUnapprovedPlayers = sorted(UNAPPROVED_PLAYERS.items(),key=unapprovedPlayersSort)
                 for player, sheet in sortedUnapprovedPlayers:
                     lastMessage = max(sheet,key=lambda message:message.edited_at if message.edited_at is not None else message.created_at)
-                    message += f'{player.display_name} (last edited: {(NOW - (lastMessage.edited_at if lastMessage.edited_at is not None else lastMessage.created_at)).days} days ago) [jump]({lastMessage.jump_url})\n'
+                    message += f'{discord.utils.escape_markdown(player.display_name)} (last edited: {(NOW - (lastMessage.edited_at if lastMessage.edited_at is not None else lastMessage.created_at)).days} days ago) [jump]({lastMessage.jump_url})\n'
             else:
                 message += 'There are none.\n'
 
@@ -61,11 +60,11 @@ class UserCommands(commands.Cog, name='UserCommands'):
             inactiveBeyondLookupLimitPlayers = set(filter(lambda player: player not in PLAYER_ACTIVITIES,PLAYERS_WITH_APPROVED_CHARACTER))
             if len(inactivePlayers) > 0 or len(inactiveBeyondLookupLimitPlayers) > 0:
                 for player in inactiveBeyondLookupLimitPlayers:
-                        message += f'{player.display_name} (last activity: more than {LOOKUP_LIMIT} days ago)\n'
+                        message += f'{discord.utils.escape_markdown(player.display_name)} (last activity: more than {LOOKUP_LIMIT} days ago)\n'
                 player : discord.Member
                 lastMessage: discord.Message
                 for player, lastMessage in sorted(inactivePlayers.items(),key=lambda x: x[1].created_at):
-                        message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
+                        message += f'{discord.utils.escape_markdown(player.display_name)} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
             else:
                 message += 'No inactive players.\n'
             
@@ -75,7 +74,7 @@ class UserCommands(commands.Cog, name='UserCommands'):
                 player : discord.Member
                 lastMessage: discord.Message
                 for player, lastMessage in sorted(activePlayers.items(),key=lambda x:x[1].created_at):
-                    message += f'{player.display_name} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
+                    message += f'{discord.utils.escape_markdown(player.display_name)} (last activity: {(NOW - lastMessage.created_at).days} days ago in {lastMessage.channel.mention} [jump]({lastMessage.jump_url}))\n'
             else:
                 message += '*sob* Irredeemable! There are no active players. Is the server dead? Hello, anyone?'
             await splitAndSend(message,ctx.channel,sendAsEmbed=True)
