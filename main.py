@@ -9,10 +9,16 @@ from discord.ext import commands
 
 class RegBot(commands.Bot):
     def __init__(self,db:asyncpg.pool.Pool):
+        intents : discord.Intents = discord.Intents.none()
+        intents.guilds = True
+        intents.guild_messages = True
+        intents.members = True
+        
         super().__init__(
             command_prefix='!reg ',
             activity=discord.Game('type "!reg help" for help'),
-            description='Hello, I\'m Reg. I help with managing this server. Contact Alpatron if I go haywire. My commands are:'
+            description='Hello, I\'m Reg. I help with managing this server. Contact Alpatron if I go haywire. My commands are:',
+            intents=intents
         )
         self.db = db
         import configuration #This is to prevent circular dependicy errors. Come to think about it, cogs are circularly dependent! All cogs must know about the bot, and the bot needs to know about cogs!
