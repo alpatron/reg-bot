@@ -30,6 +30,7 @@ class RegBot(commands.Bot):
         import userCommands
         self.add_cog(userCommands.UserCommands(self,self.get_cog('Configuration')))
         self.http_session = aiohttp.ClientSession()
+        print("Reg Bot ready!")
     
     async def on_command_error(self,ctx,exception):
         #Wait, can I not make the message part of the exception class or something? It'd perhaps be worth to look into.
