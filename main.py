@@ -74,7 +74,7 @@ class RegBot(commands.Bot):
         return accounts
 
     async def getDeadPlayerAccounts(self) -> Set[discord.User]:
-        accounts : Set[Union[discord.Member,discord.User]] = await self.getPlayersInCharacterSheetChannel()
+        accounts = await self.getPlayersInCharacterSheetChannel()
         return set(filter(lambda account:isinstance(account,discord.User),accounts))
 
     #Returns a dictionary of players who are waiting for sheet approval as the keys, and their sheets as dictionary values
