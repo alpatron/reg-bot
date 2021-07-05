@@ -9,7 +9,8 @@ def init():
     
     try:
         db = loop.run_until_complete(
-           asyncpg.create_pool(dsn=os.environ['DATABASE_URL'],ssl='require')
+           #I use this URL for local testing: postgres://postgres@127.0.0.1/RP_server_bot
+           asyncpg.create_pool(dsn=os.environ['DATABASE_URL'],ssl='require') #The SSL require value is set so that connection to the database work on Heroku. Change for your environment.
         )
     except Exception as e:
         print('Database connection error!')
@@ -17,7 +18,6 @@ def init():
         return
 
     bot = RegBot(db)
-    #Input your Discord-bot token here.
-    bot.run()
+    bot.run(os.environ['REG_BOT_KEY'])
 
 init()

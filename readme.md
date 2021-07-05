@@ -15,6 +15,13 @@ If you are a member of our server, don't hesitate to try to improve Reg Bot. If 
 
 Reg Bot is coded in Python using the [discord.py](https://github.com/Rapptz/discord.py) library, it uses a Postgres database to store its configuration, to which it connects using the [asyncpg](https://github.com/MagicStack/asyncpg) library, and it is deployed—to the dismay of many discord.py developers—on Heroku (hey, it works; don't judge).
 
+## Environment variables
+
+To run RegBot, you need to have these environment variables set:
+
+* `DATABASE_URL` — The URL pointing to the database where the bot configuration is stored. It should be a Postgres database and the string should conform to the [`dsn` specification in the `asyncpg` library](https://magicstack.github.io/asyncpg/current/api/index.html#connection).
+* `REG_BOT_KEY` — Your Discord bot key
+
 ## Database
 
 I was too lazy to a create a database-initialisation function or to create a database dump, so here's at least the schema of the database tables:
