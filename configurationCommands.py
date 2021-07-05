@@ -113,7 +113,7 @@ class ConfigurationCommands(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def registerRoleplayRole(self,ctx:commands.context.Context,*,role:discord.Role):
         if await self.configuration.roleplayRoleExists(role.id):
-            await ctx.send(f'The role {role.name} is already regisered.')
+            await ctx.send(f'The role {role.name} is already registered.')
         else:
             await self.configuration.saveRoleplayRole(role.id)
             await ctx.send(f'Added role {role.name} into the roleplay role list.')
@@ -125,7 +125,7 @@ class ConfigurationCommands(commands.Cog):
             await self.configuration.removeRoleplayRole(role.id)
             await ctx.send(f'Added role {role.name} into the roleplay role list.')
         else:
-            await ctx.send(f'The role {role.name} already isn\'t already regisered.')
+            await ctx.send(f'The role {role.name} already isn\'t already registered.')
 
     @commands.command(help='Displays a list of roleplay roles. (Used in to determine who is a roleplayer and which roles to remove while archiving.)')
     async def listRoleplayRoles(self,ctx:commands.context.Context):
@@ -220,3 +220,34 @@ class ConfigurationCommands(commands.Cog):
             await ctx.send('The activity-report–lookup limit is not set.')
         else:
             await ctx.send(f'The activity-report–lookup limit is set to {lookupLimit} days.')
+    
+    @commands.command(help='Adds a role to the list of privileged roles. (Users with a privileged may run some restricted commands.)',ignore_extra=False)
+    @commands.has_permissions(administrator=True)
+    async def registerPrivilegedRole(self,ctx:commands.context.Context,*,role:discord.Role):
+        if await self.configuration.privilegedRoleExists(role.id):
+            await ctx.send(f'The role {role.name} is already registered.')
+        else:
+            await self.configuration.savePrivilegedRole(role.id)
+            await ctx.send(f'Added role {role.name} into the privileged-role list.')
+    
+    @commands.command(help='Removes a role from the list of privileged roles. (Users with a privileged may run some restricted commands.)',ignore_extra=False)
+    @commands.has_permissions(administrator=True)
+    async def unregisterPrivilegedRole(self,ctx:commands.context.Context,*,role:discord.Role):
+        if await self.configuration.privilegedRoleExists(role.id):
+            await self.configuration.removePrivilegedRole(role.id)
+            await ctx.send(f'Removed role {role.name} from the privileged-role list.')
+        else:
+            await ctx.send(f'The role {role.name} already isn\'t registered.')
+
+    @commands.command(help='Display the list of roles that may run privileged commands, such as the archivation command. Some commands may be run by admins only and having a privileged role is not enough.')
+    @commands.has_permissions(administrator=True)
+    async def listPrivilegedRoles(self,ctx:commands.context.Context):
+        privilegedRoles = await self.configuration.getPrivilegedRoles(ctx.guild)
+        output = 'Privileged roles are:\n'
+        if len(privilegedRoles) != 0:
+            for role in privilegedRoles:
+                output += f'{role.name}\n'
+        else:
+            output += 'There are no privilged roles set.\n'
+        output += '**Note**: Users with admin rights may run any command, even if they don\'t have a role listed here.'
+        await ctx.send(output)

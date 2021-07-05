@@ -1,6 +1,6 @@
 import asyncio
 import discord
-from helperFunction import splitAndSend, convertAttachementToFile, safeCopyMessagesToChannel
+from helperFunction import splitAndSend, convertAttachementToFile, safeCopyMessagesToChannel, privilegedCheck
 from typing import Union, List, Set
 from discord.ext import commands
 from main import RegBot
@@ -28,7 +28,7 @@ class AdminCommands(commands.Cog):
                 raise commands.BadArgument('Couldn\'t resolve ID')
 
     @commands.command(help='Archives the player\'s character. Note: All user mentions are stripped from the archived character sheet. If the user has left the server, you most probably need to use the command with the user\'s ID.')
-    @commands.has_permissions(administrator=True)
+    @privilegedCheck()
     async def archive(self,ctx:commands.context.Context,reason:str,*,player:Union[discord.Member,discord.User,ClientIdConverter]):
         with ctx.message.channel.typing():
             PLAYER_CHARACTER_SHEET:List[discord.Message] = await self.bot.getCharacterSheet(player)

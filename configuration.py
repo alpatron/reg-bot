@@ -18,6 +18,7 @@ class Configuration(commands.Cog):
         self.CONFIG_INACTIVITY_THRESHOLD = 'inactivity_threshold'
         self.CONFIG_ACTIVITY_LOOKUP_LIMIT = 'activity_lookup_limit'
         self.ROLEPLAY_ROLES_TABLE = 'roleplay_roles'
+        self.PRIVILEGED_ROLES_TABLE = 'privileged_roles'
 
     #fetchRow returns either a record, if it found something, or None, if it didn't find anything
     async def roleplayChannelExists(self,channelID:int) -> bool:
@@ -37,6 +38,15 @@ class Configuration(commands.Cog):
     
     async def removeRoleplayChannel(self,ID:int):
         await self.bot.db.execute(f'DELETE FROM {self.ROLEPLAY_CHANNEL_TABLE} WHERE channel_id = ($1)',str(ID))
+
+    async def privilegedRoleExists(self,roleID:int) -> bool:
+        return await self.bot.db.fetchrow(f'SELECT * FROM {self.PRIVILEGED_ROLES_TABLE} WHERE role_id = ($1)', str(roleID)) != None
+
+    async def savePrivilegedRole(self,ID:int):
+        await self.bot.db.execute(f'INSERT INTO {self.PRIVILEGED_ROLES_TABLE}(role_id) VALUES ($1)',str(ID))
+
+    async def removePrivilegedRole(self,ID:int):
+        await self.bot.db.execute(f'DELETE FROM {self.PRIVILEGED_ROLES_TABLE} WHERE role_id = ($1)',str(ID))
 
     async def getConfiguration(self,name:str) -> Union[asyncpg.Record, None]:
         return await self.bot.db.fetchrow(f'SELECT * FROM {self.CONFIG_TABLE} WHERE name = ($1)', name)
@@ -93,3 +103,10 @@ class Configuration(commands.Cog):
         for channel in roleplayChannelsFromDatabase:
             roleplayChannels.add(self.bot.get_channel(int(channel["channel_id"])))
         return roleplayChannels
+
+    async def getPrivilegedRoles(self, guild:discord.Guild) -> Set[discord.Role]:
+        privilegedRolesFromDatabase = await self.bot.db.fetch(f'SELECT * FROM {self.PRIVILEGED_ROLES_TABLE}')
+        privilegedRoles : Set[discord.Role] = set()
+        for roleID in privilegedRolesFromDatabase:
+            privilegedRoles.add(guild.get_role(int(roleID['role_id'])))
+        return privilegedRoles

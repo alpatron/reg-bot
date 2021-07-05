@@ -3,6 +3,7 @@ import io
 import textwrap
 import re
 from typing import Union, List, Set, Callable
+from discord.ext import commands
 
 async def splitAndSend(message:str,channel:discord.channel.TextChannel,removeMentions=False,sendAsEmbed=False):
     async def genericSplit(text:str,threshold:int, splitFunction:Callable[[str],List[str]]) -> List[str]:
@@ -89,3 +90,11 @@ async def getUserMessagesInChannel(channel:discord.TextChannel,user:Union[discor
             messages.append(message)
     
     return messages
+
+#A check decorator to check whether the author has a role in the privileged-role list or has adminastrator rights.
+def privilegedCheck():
+    async def predicate(ctx:commands.context.Context):
+        configuration = ctx.bot.get_cog('Configuration')
+        privileged_roles = await configuration.getPrivilegedRoles(ctx.guild)
+        return not privileged_roles.isdisjoint(ctx.author.roles) or ctx.author.guild_permissions.administrator
+    return commands.check(predicate)

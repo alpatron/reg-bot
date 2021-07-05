@@ -21,7 +21,7 @@ class RegBot(commands.Bot):
             intents=intents
         )
         self.db = db
-        import configuration #This is to prevent circular dependicy errors. Come to think about it, cogs are circularly dependent! All cogs must know about the bot, and the bot needs to know about cogs!
+        import configuration #This is to prevent circular dependency errors. Come to think about it, cogs are circularly dependent! All cogs must know about the bot, and the bot needs to know about cogs!
         self.add_cog(configuration.Configuration(self))
         import configurationCommands
         self.add_cog(configurationCommands.ConfigurationCommands(self,self.get_cog('Configuration')))

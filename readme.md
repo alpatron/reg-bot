@@ -47,3 +47,10 @@ I was too lazy to a create a database-initialisation function or to create a dat
 |------------|-----------------------|
 | id    |  integer(auto-increment;primary key) |
 | role_id | character varying[64] |
+
+##### privileged_roles
+
+| column name | column info |
+|------------|-----------------------|
+| id    |  integer(auto-increment;primary key) |
+| role_id | character varying[64] |
