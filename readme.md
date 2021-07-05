@@ -1,6 +1,6 @@
 # Reg Bot—Bespoke Discord-management bot for a Made in Abyss roleplay server
 
-Reg Bot was made to automate certain administratory  task on the [_- Made In Abyss Rp -_](https://www.reddit.com/r/MadeInAbyss/comments/8wiinr/join_the_made_in_abyss_roleplay_discord/) roleplay Discord server. The tasks being:
+Reg Bot was made to automate certain administratory  task on the [Made In Abyss RP](https://www.reddit.com/r/MadeInAbyss/comments/8wiinr/join_the_made_in_abyss_roleplay_discord/) roleplay Discord server. The tasks being:
 
 * Displaying an activity report of players with active characters to see which players are inactive. (It displays the last time a player has posted.)
 * Archiving player characters on demand.
